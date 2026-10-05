@@ -1,6 +1,6 @@
 # SPEC 03 — Sonidos y niveles de dificultad
 
-> **Estado:** Aprobado
+> **Estado:** Implementado
 > **Depende de:** SPEC 01, SPEC 02
 > **Fecha:** 2026-10-05
 > **Objetivo:** El juego reproduce `ball-bounce.mp3` y `break-sound.mp3` en los rebotes y roturas, y arranca con un menú donde se elige dificultad Fácil, Normal o Difícil con las teclas `1`/`2`/`3`.

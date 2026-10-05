@@ -2,27 +2,39 @@ const CANVAS_W = 480;
 const CANVAS_H = 640;
 const MAX_BOUNCE_ANGLE = Math.PI / 3; // 60°
 
-function createInitialState() {
-  const paddle = createPaddle();
+function createInitialState(difficulty, status) {
+  const paddle = createPaddle(difficulty);
   return {
-    status: 'serving', // 'serving' | 'playing' | 'gameover' | 'won'
+    status, // 'menu' | 'serving' | 'playing' | 'gameover' | 'won'
+    difficulty, // 'easy' | 'normal' | 'hard'
     score: 0,
     lives: 3,
     paddle,
-    ball: createBall(paddle),
+    ball: createBall(paddle, difficulty),
     blocks: createBlocks(),
     explosions: [],
   };
 }
 
-const state = createInitialState();
+const state = createInitialState('normal', 'menu');
+
+function startGame(difficulty) {
+  Object.assign(state, createInitialState(difficulty, 'serving'));
+}
 
 function resetGame() {
-  Object.assign(state, createInitialState());
+  Object.assign(state, createInitialState('normal', 'menu'));
 }
 
 function update(dt) {
   updateExplosions(dt);
+
+  if (state.status === 'menu') {
+    if (keys.easy) startGame('easy');
+    else if (keys.normal) startGame('normal');
+    else if (keys.hard) startGame('hard');
+    return;
+  }
 
   if (state.status === 'gameover' || state.status === 'won') {
     if (keys.restart) resetGame();
@@ -54,14 +66,17 @@ function moveBall(dt) {
   if (ball.x < 0) {
     ball.x = 0;
     ball.vx = Math.abs(ball.vx);
+    playSound('bounce');
   } else if (ball.x + ball.size > CANVAS_W) {
     ball.x = CANVAS_W - ball.size;
     ball.vx = -Math.abs(ball.vx);
+    playSound('bounce');
   }
 
   if (ball.y < 0) {
     ball.y = 0;
     ball.vy = Math.abs(ball.vy);
+    playSound('bounce');
   }
 
   bounceOffPaddle();
@@ -98,6 +113,7 @@ function hitBlock() {
     block.alive = false;
     state.explosions.push(createExplosion(block));
     state.score += 10;
+    playSound('break');
 
     // El eje con menor solapamiento es el del impacto.
     if (overlapX < overlapY) {
@@ -131,6 +147,7 @@ function bounceOffPaddle() {
   ball.vx = ball.speed * Math.sin(angle);
   ball.vy = -ball.speed * Math.cos(angle);
   ball.y = paddle.y - ball.size;
+  playSound('bounce');
 }
 
 function movePaddle(dt) {
@@ -160,6 +177,11 @@ function render(ctx) {
 
   renderExplosions(ctx);
 
+  if (state.status === 'menu') {
+    renderMenu(ctx);
+    return;
+  }
+
   const { paddle, ball } = state;
   drawSprite(ctx, 'paddle', paddle.x, paddle.y, paddle.w, paddle.h);
   drawSprite(ctx, 'ball', ball.x, ball.y, ball.size, ball.size);
@@ -179,8 +201,25 @@ function renderHud(ctx) {
   ctx.textBaseline = 'top';
   ctx.textAlign = 'left';
   ctx.fillText(`PUNTOS: ${state.score}`, 16, 20);
+  ctx.textAlign = 'center';
+  ctx.fillText(DIFFICULTIES[state.difficulty].label, CANVAS_W / 2, 20);
   ctx.textAlign = 'right';
   ctx.fillText(`VIDAS: ${state.lives}`, CANVAS_W - 16, 20);
+}
+
+function renderMenu(ctx) {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = 'bold 40px monospace';
+  ctx.fillText('ARKANOID', CANVAS_W / 2, CANVAS_H / 2 - 80);
+  ctx.font = '20px monospace';
+  ctx.fillText(`1 - ${DIFFICULTIES.easy.label}`, CANVAS_W / 2, CANVAS_H / 2);
+  ctx.fillText(`2 - ${DIFFICULTIES.normal.label}`, CANVAS_W / 2, CANVAS_H / 2 + 35);
+  ctx.fillText(`3 - ${DIFFICULTIES.hard.label}`, CANVAS_W / 2, CANVAS_H / 2 + 70);
 }
 
 function renderMessage(ctx, title) {
@@ -194,6 +233,7 @@ function renderMessage(ctx, title) {
   ctx.fillText(title, CANVAS_W / 2, CANVAS_H / 2 - 40);
   ctx.font = '20px monospace';
   ctx.fillText(`Puntos: ${state.score}`, CANVAS_W / 2, CANVAS_H / 2 + 10);
+  ctx.fillText(DIFFICULTIES[state.difficulty].label, CANVAS_W / 2, CANVAS_H / 2 + 40);
   ctx.font = '16px monospace';
-  ctx.fillText('Pulsa Enter para reiniciar', CANVAS_W / 2, CANVAS_H / 2 + 50);
+  ctx.fillText('Pulsa Enter para volver al menú', CANVAS_W / 2, CANVAS_H / 2 + 80);
 }

@@ -5,11 +5,18 @@ const BLOCK_H = 16;
 const GRID_X = 32;
 const GRID_Y = 64;
 
-function createPaddle() {
-  return { x: 192, y: 600, w: 96, h: 14, speed: 420 };
+const DIFFICULTIES = {
+  easy:   { label: 'FÁCIL',   ballSpeed: 240, paddleWidth: 120 },
+  normal: { label: 'NORMAL',  ballSpeed: 300, paddleWidth: 96 },
+  hard:   { label: 'DIFÍCIL', ballSpeed: 380, paddleWidth: 72 },
+};
+
+function createPaddle(difficulty) {
+  const w = DIFFICULTIES[difficulty].paddleWidth;
+  return { x: (CANVAS_W - w) / 2, y: 600, w, h: 14, speed: 420 };
 }
 
-function createBall(paddle) {
+function createBall(paddle, difficulty) {
   const size = 12;
   return {
     x: paddle.x + paddle.w / 2 - size / 2,
@@ -17,7 +24,7 @@ function createBall(paddle) {
     size,
     vx: 0,
     vy: 0,
-    speed: 300,
+    speed: DIFFICULTIES[difficulty].ballSpeed,
   };
 }
 
