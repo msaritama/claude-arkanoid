@@ -8,8 +8,7 @@ function loop(time) {
   const dt = Math.min((time - lastTime) / 1000, MAX_DT);
   lastTime = time;
 
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  render(ctx);
 
   requestAnimationFrame(loop);
 }
