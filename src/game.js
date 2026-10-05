@@ -11,6 +11,30 @@ const state = {
 };
 state.ball = createBall(state.paddle);
 
+function update(dt) {
+  movePaddle(dt);
+
+  if (state.status === 'serving') {
+    stickBallToPaddle();
+  }
+}
+
+function movePaddle(dt) {
+  const { paddle } = state;
+  let direction = 0;
+  if (keys.left) direction -= 1;
+  if (keys.right) direction += 1;
+
+  paddle.x += direction * paddle.speed * dt;
+  paddle.x = Math.max(0, Math.min(CANVAS_W - paddle.w, paddle.x));
+}
+
+function stickBallToPaddle() {
+  const { paddle, ball } = state;
+  ball.x = paddle.x + paddle.w / 2 - ball.size / 2;
+  ball.y = paddle.y - ball.size;
+}
+
 function render(ctx) {
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);

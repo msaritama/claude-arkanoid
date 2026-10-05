@@ -8,6 +8,7 @@ function loop(time) {
   const dt = Math.min((time - lastTime) / 1000, MAX_DT);
   lastTime = time;
 
+  update(dt);
   render(ctx);
 
   requestAnimationFrame(loop);
