@@ -11,6 +11,7 @@ function createInitialState() {
     paddle,
     ball: createBall(paddle),
     blocks: createBlocks(),
+    explosions: [],
   };
 }
 
@@ -21,6 +22,8 @@ function resetGame() {
 }
 
 function update(dt) {
+  updateExplosions(dt);
+
   if (state.status === 'gameover' || state.status === 'won') {
     if (keys.restart) resetGame();
     return;
@@ -93,6 +96,7 @@ function hitBlock() {
     if (overlapX <= 0 || overlapY <= 0) continue;
 
     block.alive = false;
+    state.explosions.push(createExplosion(block));
     state.score += 10;
 
     // El eje con menor solapamiento es el del impacto.
@@ -153,6 +157,8 @@ function render(ctx) {
     if (!block.alive) continue;
     drawSprite(ctx, `block_${block.color}`, block.x, block.y, block.w, block.h);
   }
+
+  renderExplosions(ctx);
 
   const { paddle, ball } = state;
   drawSprite(ctx, 'paddle', paddle.x, paddle.y, paddle.w, paddle.h);
